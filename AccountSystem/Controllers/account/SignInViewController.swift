@@ -194,9 +194,9 @@ class SignInViewController: AccountBaseViewController {
             firstly(execute: { () -> Promise<User> in
                 // 如果当前存在匿名登录账户，则尝试将第三方账号关联到该账户
                 if let user = User.current(), user.isAnonymous() {
-                    return user.associate(.promise, authData: authData, platformId: platform.platformIdForLeanCloud, options: option)
-                    .map({ _ in user })
-                    .recover({ (error) -> Promise<User> in
+                    return user.associate(.promise, authData: authData, platformId: platform.platformIdForLeanCloud, options: option).then({ (_) -> Promise<User> in
+                        return user.fetch(.promise)
+                    }).recover({ (error) -> Promise<User> in
                         guard (error as NSError?)?.code == 137 else { throw error }
                         
                         // 若该第三方账户被其他用户绑定，则执行登录操作
@@ -260,4 +260,5 @@ class SignInViewController: AccountBaseViewController {
             self.dismiss(animated: true, completion: nil)
         }
     }
+    
 }
