@@ -106,7 +106,7 @@ class PhoneFieldWithSendCodeButton: UIView {
             hud = MBProgressHUD.showAdded(to: view, animated: true)
         }
         
-        AVSMS.sendSmsCode(.promise, phone, applicationName: "汉字的故事", operation: "验证手机").then { (_) -> Guarantee<Void> in
+        AVSMS.sendSmsCode(.promise, phone, applicationName: "AccountSystem", operation: "验证手机").then { (_) -> Guarantee<Void> in
             return hud?.hideForSuccess(.promise, "验证码发送成功") ?? .value(())
         }.done({ (_) in
             self.didSend?()
