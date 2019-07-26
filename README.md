@@ -5,7 +5,7 @@ Account system based on LeanCloud.
 Features:
 
 * Sign in & sign up by phone and password.
-* Sign in by social accounts: Wechat/QQ/Weibo/Twitter/Facebook).
+* Sign in by social accounts: Wechat, QQ, Weibo, Twitter, Facebook.
 * Forgot password & reset password.
 * Change avatar, nickname, phone, password.
 * Support anonymous user.
