@@ -235,10 +235,9 @@ class SignInViewController: AccountBaseViewController {
             
             let avatar = AVFile(data: data)
             
-            avatar.upload(.promise).done { (avatar) in
+            _ = avatar.upload(.promise).done { (avatar) in
                 currentUser.avatar = avatar
-                finishSignInClosure()
-            }.catch { (error) in
+            }.ensure {
                 finishSignInClosure()
             }
         }
