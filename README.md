@@ -223,6 +223,8 @@ Check `启用通用的短信验证码服务` in `消息` -> `短信` -> `设置`
 
 Apply for `短信签名` in `消息` -> `短信` -> `设置` in LeanCloud console.
 
+Update `applicationName` in function `sendCode` in `Views/PhoneFieldWithSendCodeButton.swift`. 
+
 Add two cloud functions:
 
 ```ts
