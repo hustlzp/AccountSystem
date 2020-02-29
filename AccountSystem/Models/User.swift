@@ -18,9 +18,10 @@ class User: AVUser {
     @NSManaged var didBindQQ: Bool
     @NSManaged var didBindFacebook: Bool
     @NSManaged var didBindTwitter: Bool
-    
+    @NSManaged var didBindApple: Bool
+
     // MARK: Account
-    
+
     class func checkPhoneExist(_ phone: String) -> Promise<Bool> {
         return AVCloud.callFunction(.promise, name: "checkPhoneExist", parameters: ["phone": phone])
     }

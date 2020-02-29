@@ -5,7 +5,7 @@ Account system based on LeanCloud.
 Features:
 
 * Sign in & sign up by phone and password.
-* Sign in by social accounts: Wechat, QQ, Weibo, Twitter, Facebook.
+* Sign in by social accounts: Sign In with Apple, Wechat, QQ, Weibo, Twitter, Facebook.
 * Forgot password & reset password.
 * Change avatar, nickname, phone, password.
 * Support anonymous user.
@@ -275,6 +275,8 @@ AV.Cloud.define('resetPassword', resetPassword)
 ```
 
 ## Other
+
+Enable `Sign In with Apple` in `Signing & Capabilities`.
 
 Add following to `Info.plist` as source code:
 

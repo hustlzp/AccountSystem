@@ -11,6 +11,7 @@ import MBProgressHUD
 import PromiseKit
 import SDWebImage
 import AVOSCloud
+import AuthenticationServices
 
 class SignInViewController: AccountBaseViewController {
     private var phoneField: AccountTextField!
@@ -52,6 +53,21 @@ class SignInViewController: AccountBaseViewController {
         socialWapView.snp.makeConstraints { (make) in
             make.centerX.equalTo(view)
             make.bottom.equalTo(view).offset(-40 - Size.safeAreaBottomGap)
+        }
+
+        // Sign in with Apple
+        if #available(iOS 13.0, *) {
+            let authorizationButton = ASAuthorizationAppleIDButton(type: .signIn, style: .whiteOutline)
+            authorizationButton.cornerRadius = 25
+            authorizationButton.addTarget(self, action: #selector(handleAuthorizationAppleIDButtonPress), for: .touchUpInside)
+            view.addSubview(authorizationButton)
+            
+            authorizationButton.snp.makeConstraints { (make) in
+                make.width.equalTo(Size.screenWidth - 2 * Size.horizonalGap)
+                make.height.equalTo(50)
+                make.centerX.equalTo(view)
+                make.bottom.equalTo(socialWapView.snp.top).offset(-60)
+            }
         }
     }
     
@@ -116,6 +132,18 @@ class SignInViewController: AccountBaseViewController {
     @objc private func signInByFacebook() {
         signIn(platform: .facebook)
     }
+
+    @available(iOS 13.0, *)
+    @objc private func handleAuthorizationAppleIDButtonPress() {
+        let appleIDProvider = ASAuthorizationAppleIDProvider()
+        let request = appleIDProvider.createRequest()
+        request.requestedScopes = [.fullName]
+
+        let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+        authorizationController.delegate = self
+        authorizationController.presentationContextProvider = self
+        authorizationController.performRequests()
+    }
     
     // MARK: Notification Handler
     
@@ -156,7 +184,7 @@ class SignInViewController: AccountBaseViewController {
             let weiboButton = SocialAuthButton(platformType: .weibo, target: self, action: #selector(signInByWeibo))
             wapView.addArrangedSubview(weiboButton)
         }
-        
+
         if UMSocialManager.default().isInstall(.wechatSession) {
             let wechatButton = SocialAuthButton(platformType: .wechat, target: self, action: #selector(signInByWechat))
             wapView.addArrangedSubview(wechatButton)
@@ -180,7 +208,7 @@ class SignInViewController: AccountBaseViewController {
     private func signIn(platform: SocialPlatform) {
         UMSocialManager.default()?.getUserInfo(.promise, platformType: platform.platformTypeForUM, currentViewController: self).done({ (response) in
             let result = Utils.getAuthDateAndOptionFromUMResponse(response, platform: platform)
-            
+
             guard let authData = result.authData else {
                 MBProgressHUD.showForError(UIApplication.shared.keyWindow!, error: MyError.custom(errorDescription: String(format: "%@ 登录失败".localized(), platform.name)))
                 return
@@ -220,7 +248,7 @@ class SignInViewController: AccountBaseViewController {
         let finishSignInClosure = {
             self.finishSignIn(platform: platform, response: response, currentUser: currentUser, hud: hud)
         }
-        
+
         // 头像
         guard let iconUrlString = response.iconurl, let iconUrl = URL(string: iconUrlString), currentUser.avatar == nil else {
             finishSignInClosure()
@@ -259,5 +287,94 @@ class SignInViewController: AccountBaseViewController {
             self.dismiss(animated: true, completion: nil)
         }
     }
+
+}
+
+// MARK: - ASAuthorizationControllerDelegate
+
+@available(iOS 13.0, *)
+extension SignInViewController: ASAuthorizationControllerDelegate {
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            let userIdentifier = appleIDCredential.user
+            let fullName = appleIDCredential.fullName
+            let authData: [String: Any] = ["uid": userIdentifier]
+            let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+            let platform = SocialPlatform.apple
+
+            let signInPromise = User.login(.promise, authData: authData, platformId: platform.platformIdForLeanCloud, options: nil)
+
+            firstly(execute: { () -> Promise<User> in
+                // 如果当前存在匿名登录账户，则尝试将第三方账号关联到该账户
+                if let user = User.current(), user.isAnonymous() {
+                    return user.associate(.promise, authData: authData, platformId: platform.platformIdForLeanCloud, options: nil).then({ (_) -> Promise<User> in
+                        return user.fetch(.promise)
+                    }).recover({ (error) -> Promise<User> in
+                        guard (error as NSError?)?.code == 137 else { throw error }
+                        
+                        // 若该第三方账户被其他用户绑定，则执行登录操作
+                        return signInPromise
+                    })
+                }
+                
+                // 否则，执行登录操作
+                return signInPromise
+            }).then { (user) -> Guarantee<Void> in
+                // 用户名
+                if user.nickname == nil {
+                    user.nickname = self.getUsernameFromPersonNameComponents(fullName)
+                }
+                user.didBindApple = true
+                user.saveInBackground()
+                return after(seconds: 0.5)
+            }.then { (_) -> Guarantee<Void> in
+                return hud.hideForSuccess(.promise, "登录成功".localized())
+            }.done { (_) in
+                NotificationCenter.default.post(name: .didSignIn, object: nil)
+                self.dismiss(animated: true, completion: nil)
+            }.catch { (error) in
+                hud.hideForInfo(String(format: "%@ 登录失败".localized(), platform.name))
+            }
+        }
+    }
     
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        let nsError = error as NSError
+        
+        if nsError.domain == ASAuthorizationError.errorDomain, let code = ASAuthorizationError.Code(rawValue: nsError.code) {
+            switch code {
+            case .canceled:
+                return
+            default:
+                MBProgressHUD.showForInfo(self.view, text: "登录失败".localized())
+            }
+        } else {
+            MBProgressHUD.showForInfo(self.view, text: "登录失败".localized())
+        }
+    }
+    
+    /// 从 PersonNameComponents 中获取合适的用户名
+    /// - Parameter nameComponents: <#nameComponents description#>
+    private func getUsernameFromPersonNameComponents(_ nameComponents: PersonNameComponents?) -> String {
+        if let nickname = nameComponents?.nickname {
+            return nickname
+        } else if let givenName = nameComponents?.givenName {
+            if let familyName = nameComponents?.familyName {
+                return familyName + givenName
+            } else {
+                return givenName
+            }
+        } else {
+            return "苹果用户".localized()
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerPresentationContextProviding
+
+@available(iOS 13.0, *)
+extension SignInViewController: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
+    }
 }

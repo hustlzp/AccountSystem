@@ -11,6 +11,7 @@ import MBProgressHUD
 import PromiseKit
 import SDWebImage
 import AVOSCloud
+import AuthenticationServices
 
 class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -114,7 +115,23 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
     @objc private func unbindFacebook(sourceView: UIView?) {
         unbindSocialAccount(.facebook, sourceView: sourceView)
     }
+
+    @available(iOS 13.0, *)
+    private func bindApple() {
+        let appleIDProvider = ASAuthorizationAppleIDProvider()
+        let request = appleIDProvider.createRequest()
+        request.requestedScopes = [.fullName]
+
+        let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+        authorizationController.delegate = self
+        authorizationController.presentationContextProvider = self
+        authorizationController.performRequests()
+    }
     
+    @objc private func unbindApple(sourceView: UIView?) {
+        unbindSocialAccount(.apple, sourceView: sourceView)
+    }
+
     @objc private func signOut(sourceView: UIView?) {
         _ = showConfirmController(style: .actionSheet, title: "确认退出账号？".localized(), confirmText: "退出".localized(), confirmStyle: .destructive, showCancelButton: true, sourceView: sourceView).done({ (_) in
             User.logOut()
@@ -134,7 +151,7 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
         case 0:
             return 4
         case 1:
-            return 5
+            return 6
         case 2:
             return 1
         default:
@@ -173,6 +190,8 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
                 configKeyValueCell(cell, key: "Twitter", value: user.didBindTwitter ? "已绑定".localized() : "未绑定".localized())
             case 4:
                 configKeyValueCell(cell, key: "Facebook", value: user.didBindFacebook ? "已绑定".localized() : "未绑定".localized())
+            case 5:
+                configKeyValueCell(cell, key: "Apple", value: user.didBindApple ? "已绑定".localized() : "未绑定".localized())
             default:
                 break
             }
@@ -228,6 +247,14 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
                 user.didBindTwitter ? unbindTwitter(sourceView: cell) : bindTwitter()
             case 4:
                 user.didBindFacebook ? unbindFacebook(sourceView: cell) : bindFacebook()
+            case 5:
+                if user.didBindApple {
+                    unbindApple(sourceView: cell)
+                } else {
+                    if #available(iOS 13.0, *) {
+                        bindApple()
+                    }
+                }
             default:
                 break
             }
@@ -364,7 +391,7 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
             MBProgressHUD.showForError(self.view, error: error)
         }
     }
-    
+
     // 绑定第三方账户
     private func bindSocialAccount(_ platform: SocialPlatform) {
         guard let user = User.current() else { return }
@@ -394,7 +421,7 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
             MBProgressHUD.showForError(UIApplication.shared.keyWindow!, error: error)
         }
     }
-    
+
     private func continueBinding(platform: SocialPlatform, response: UMSocialUserInfoResponse, currentUser: User, hud: MBProgressHUD) {
         let finishBindingClosure = {
             self.finishBinding(platform: platform, response: response, currentUser: currentUser, hud: hud)
@@ -435,5 +462,61 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
             hud.hideForSuccess("绑定成功".localized())
             self.tableView.reloadData()
         }
+    }
+}
+
+// MARK: - ASAuthorizationControllerDelegate
+
+@available(iOS 13.0, *)
+extension AccountSettingsViewController: ASAuthorizationControllerDelegate {
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        guard let user = User.current() else { return }
+        
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            let userIdentifier = appleIDCredential.user
+            let authData: [String: Any] = ["uid": userIdentifier]
+            
+            let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+
+            user.associate(.promise, authData: authData, platformId: "apple", options: nil).then { (_) -> Promise<Void> in
+                user.didBindApple = true
+                return user.save(.promise).map({ _ in () })
+            }.done { (_) in
+                hud.hideForSuccess("Apple 账号绑定成功".localized())
+                self.tableView.reloadData()
+            }.catch { (error) in
+                if (error as NSError).code == 137 {
+                    hud.hideForInfo("此 Apple 账号已被其他用户绑定".localized())
+                    return
+                }
+
+                hud.hideForInfo("Apple 账号绑定失败".localized())
+            }
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        let nsError = error as NSError
+        
+        if nsError.domain == ASAuthorizationError.errorDomain, let code = ASAuthorizationError.Code(rawValue: nsError.code) {
+            switch code {
+            case .canceled:
+                return
+            default:
+                MBProgressHUD.showForInfo(self.view, text: "Apple 登录启用失败".localized())
+            }
+        } else {
+            MBProgressHUD.showForInfo(self.view, text: "Apple 登录启用失败".localized())
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerPresentationContextProviding
+
+@available(iOS 13.0, *)
+extension AccountSettingsViewController: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
 }

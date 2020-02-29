@@ -33,7 +33,7 @@ class SignUpViewController: AccountBaseViewController {
         super.loadView()
         
         phoneField = PhoneFieldWithSendCodeButton(didSend: { [weak self] in
-            self?.codeField?.becomeFirstResponder()
+            _ = self?.codeField?.becomeFirstResponder()
         })
         stackView.addRow(phoneField, inset: UIEdgeInsets(top: Size.accountFirstFieldTopGap, left: Size.accountFieldHorizonalGap, bottom: 0, right: Size.accountFieldHorizonalGap))
         
@@ -64,9 +64,6 @@ class SignUpViewController: AccountBaseViewController {
         }
         
         let hud = MBProgressHUD.showAdded(to: view, animated: true)
-        
-//        view.endEditing(true)
-        
         User.checkPhoneExist(phone).then { (exist) -> Promise<Void> in
             if exist {
                 throw MyError.custom(errorDescription: "该手机号已被注册")

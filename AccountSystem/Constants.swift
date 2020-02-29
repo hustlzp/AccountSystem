@@ -79,7 +79,8 @@ enum SocialPlatform: CaseIterable {
     case weibo
     case twitter
     case facebook
-    
+    case apple
+
     var platformIdForLeanCloud: String {
         switch self {
         case .qq:
@@ -92,9 +93,11 @@ enum SocialPlatform: CaseIterable {
             return "twitter"
         case .facebook:
             return "facebook"
+        case .apple:
+            return "apple"
         }
     }
-    
+
     var platformTypeForUM: UMSocialPlatformType {
         switch self {
         case .qq:
@@ -107,9 +110,11 @@ enum SocialPlatform: CaseIterable {
             return .twitter
         case .facebook:
             return .facebook
+        case .apple:
+            return .unKnown
         }
     }
-    
+
     var name: String {
         switch self {
         case .qq:
@@ -122,9 +127,11 @@ enum SocialPlatform: CaseIterable {
             return "Twitter"
         case .facebook:
             return "Facebook"
+        case .apple:
+            return "Apple"
         }
     }
-    
+
     var didSetKeyPath: ReferenceWritableKeyPath<User, Bool> {
         switch self {
         case .qq:
@@ -137,9 +144,11 @@ enum SocialPlatform: CaseIterable {
             return \User.didBindTwitter
         case .facebook:
             return \User.didBindFacebook
+        case .apple:
+            return \User.didBindApple
         }
     }
-    
+
     var iconName: String {
         switch self {
         case .qq:
@@ -152,6 +161,8 @@ enum SocialPlatform: CaseIterable {
             return "account/twitter"
         case .facebook:
             return "account/facebook"
+        case .apple:
+            return ""
         }
     }
 }

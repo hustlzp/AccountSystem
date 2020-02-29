@@ -11,7 +11,7 @@ import UIKit
 class SocialAuthButton: UIButton {
     init(platformType: SocialPlatform, target: Any, action: Selector) {
         super.init(frame: .zero)
-        
+
         contentEdgeInsets = UIEdgeInsets(top: 15, left: 12, bottom: 15, right: 12)
         addTarget(target, action: action, for: .touchUpInside)
         

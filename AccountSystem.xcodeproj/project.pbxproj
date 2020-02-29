@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0574B908240A0CB5002A7407 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0574B907240A0CB5002A7407 /* README.md */; };
 		059B92DF22E942BB00A167C7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059B92DE22E942BB00A167C7 /* AppDelegate.swift */; };
 		059B92E422E942BB00A167C7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 059B92E222E942BB00A167C7 /* Main.storyboard */; };
 		059B92E622E942BD00A167C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 059B92E522E942BD00A167C7 /* Assets.xcassets */; };
@@ -45,7 +46,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		059B92DB22E942BB00A167C7 /* AccountSystem.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccountSystem.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0574B906240A03B0002A7407 /* LCAccountSystem.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LCAccountSystem.entitlements; sourceTree = "<group>"; };
+		0574B907240A0CB5002A7407 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		059B92DB22E942BB00A167C7 /* LCAccountSystem.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LCAccountSystem.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		059B92DE22E942BB00A167C7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		059B92E322E942BB00A167C7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		059B92E522E942BD00A167C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -102,6 +105,7 @@
 		059B92D222E942BB00A167C7 = {
 			isa = PBXGroup;
 			children = (
+				0574B907240A0CB5002A7407 /* README.md */,
 				059B92DD22E942BB00A167C7 /* AccountSystem */,
 				059B92DC22E942BB00A167C7 /* Products */,
 				ED4090606FFCBAA5AFFE48F8 /* Pods */,
@@ -112,7 +116,7 @@
 		059B92DC22E942BB00A167C7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				059B92DB22E942BB00A167C7 /* AccountSystem.app */,
+				059B92DB22E942BB00A167C7 /* LCAccountSystem.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,6 +124,7 @@
 		059B92DD22E942BB00A167C7 /* AccountSystem */ = {
 			isa = PBXGroup;
 			children = (
+				0574B906240A03B0002A7407 /* LCAccountSystem.entitlements */,
 				059B931E22E95E9700A167C7 /* Extensions */,
 				059B92F622E94FC500A167C7 /* Models */,
 				059B92F322E94EB000A167C7 /* Views */,
@@ -245,7 +250,7 @@
 			);
 			name = AccountSystem;
 			productName = AccountSystem;
-			productReference = 059B92DB22E942BB00A167C7 /* AccountSystem.app */;
+			productReference = 059B92DB22E942BB00A167C7 /* LCAccountSystem.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -288,6 +293,7 @@
 			files = (
 				059B92E922E942BD00A167C7 /* LaunchScreen.storyboard in Resources */,
 				059B92E622E942BD00A167C7 /* Assets.xcassets in Resources */,
+				0574B908240A0CB5002A7407 /* README.md in Resources */,
 				059B92E422E942BB00A167C7 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -535,6 +541,7 @@
 			baseConfigurationReference = FAB84D4F46D473820D74408C /* Pods-AccountSystem.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AccountSystem/LCAccountSystem.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KR32QFSV8Z;
 				INFOPLIST_FILE = AccountSystem/Info.plist;
@@ -543,8 +550,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.hustlzp.AccountSystem;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hustlzp.LCAccountSystem;
+				PRODUCT_NAME = LCAccountSystem;
 				SWIFT_OBJC_BRIDGING_HEADER = "AccountSystem/AccountSystem-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -556,6 +563,7 @@
 			baseConfigurationReference = 20571E8B430E064A7DE4ABEB /* Pods-AccountSystem.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AccountSystem/LCAccountSystem.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KR32QFSV8Z;
 				INFOPLIST_FILE = AccountSystem/Info.plist;
@@ -564,8 +572,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.hustlzp.AccountSystem;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hustlzp.LCAccountSystem;
+				PRODUCT_NAME = LCAccountSystem;
 				SWIFT_OBJC_BRIDGING_HEADER = "AccountSystem/AccountSystem-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
