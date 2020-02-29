@@ -116,8 +116,11 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
         unbindSocialAccount(.facebook, sourceView: sourceView)
     }
 
-    @available(iOS 13.0, *)
     private func bindApple() {
+        guard #available(iOS 13.0, *) else {
+            return
+        }
+
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
         request.requestedScopes = [.fullName]
@@ -151,7 +154,11 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
         case 0:
             return 4
         case 1:
-            return 6
+            if #available(iOS 13.0, *) {
+                return 6
+            } else {
+                return 5
+            }
         case 2:
             return 1
         default:
@@ -248,13 +255,7 @@ class AccountSettingsViewController: UIViewController, UITableViewDelegate, UITa
             case 4:
                 user.didBindFacebook ? unbindFacebook(sourceView: cell) : bindFacebook()
             case 5:
-                if user.didBindApple {
-                    unbindApple(sourceView: cell)
-                } else {
-                    if #available(iOS 13.0, *) {
-                        bindApple()
-                    }
-                }
+                user.didBindApple ? unbindApple(sourceView: cell) : bindApple()
             default:
                 break
             }

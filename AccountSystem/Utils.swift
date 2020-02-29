@@ -140,6 +140,8 @@ class Utils {
             ]
             
             return (authData, nil)
+        case .apple:
+            return (nil, nil)
         }
     }
     

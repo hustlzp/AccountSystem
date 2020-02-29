@@ -55,7 +55,7 @@ class SignInViewController: AccountBaseViewController {
             make.bottom.equalTo(view).offset(-40 - Size.safeAreaBottomGap)
         }
 
-        // Sign in with Apple
+        // Sign In with Apple
         if #available(iOS 13.0, *) {
             let authorizationButton = ASAuthorizationAppleIDButton(type: .signIn, style: .whiteOutline)
             authorizationButton.cornerRadius = 25

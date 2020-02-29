@@ -26,6 +26,8 @@ class SocialAuthButton: UIButton {
             setImage(UIImage(named: "account/twitter"), for: .normal)
         case .facebook:
             setImage(UIImage(named: "account/facebook"), for: .normal)
+        case .apple:
+            break
         }
     }
     
